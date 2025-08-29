@@ -5,7 +5,7 @@ Handles execution of recognized commands
 """
 
 import time
-from .api_client import APIClient
+from api_client import APIClient
 
 
 class CommandExecutor:
