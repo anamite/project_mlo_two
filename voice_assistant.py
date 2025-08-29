@@ -8,11 +8,11 @@ import asyncio
 import sounddevice as sd
 from threading import Event
 
-from project_mlo_two.audio_manager import AudioManager
-from project_mlo_two.wake_word_detector import WakeWordDetector
-from project_mlo_two.speech_recognizer import SpeechRecognizer
-from project_mlo_two.command_processor import CommandProcessor
-from project_mlo_two.command_executor import CommandExecutor
+from audio_manager import AudioManager
+from wake_word_detector import WakeWordDetector
+from speech_recognizer import SpeechRecognizer
+from command_processor import CommandProcessor
+from command_executor import CommandExecutor
 
 
 class VoiceAssistant:
