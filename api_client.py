@@ -35,7 +35,7 @@ class APIClient:
             "messages": [
                 {
                     "role": "system", 
-                    "content": "You are a helpful assistant. Give brief, conversational responses. limit to 3 to 5 words as possible."
+                    "content": "You are a helpful assistant. Give brief, conversational responses. limit to 3 to 5 words as possible. You must respond as humanly as possible, add 'mmm', 'haa' 'Yesss' kind of filling sounds as necessary, keep answers straig to the question and simple."
                 },
                 {
                     "role": "user", 
