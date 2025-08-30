@@ -6,74 +6,106 @@ Handles execution of recognized commands
 
 import time
 from api_client import APIClient
+from database_manager import DatabaseManager
 
 
 class CommandExecutor:
     def __init__(self, audio_manager):
         self.audio_manager = audio_manager
         self.api_client = APIClient()
+        self.db_manager = DatabaseManager()
 
-    async def execute_command(self, command, song=None, original_text=""):
-        """Execute the matched command and provide voice feedback"""
-        print(f"\n🚀 Executing: {command}")
+    async def execute_initial_command(self, tool_type, tool_id, confidence, command_text):
+        """
+        Execute the matched command based on tool type and ID
         
-        response_text = ""
+        Args:
+            tool_type (str): Type of tool ("simple" or "intelligent")
+            tool_id (int): ID of the tool in database
+            confidence (float): Confidence score of the match
+            command_text (str): Original user command text
+        """
+        print(f"\n🚀 Executing {tool_type} tool (ID: {tool_id}) with confidence: {confidence:.2f}%")
+        
+        response = ""
 
-        if command == "turn on all lights":
-            print("💡 All lights are now ON")
-            response_text = "All lights are now on"
+        if tool_type == "simple":
+            # Get simple tool details from database
+            tool_details = self.db_manager.get_simple_tool(tool_id)
             
-        elif command == "turn off all lights":
-            print("🔌 All lights are now OFF")
-            response_text = "All lights are now off"
-            
-        elif "bedroom lights" in command:
-            action = "ON" if "on" in command else "OFF"
-            print(f"🛏️ Bedroom lights are now {action}")
-            response_text = f"Bedroom lights are now {action.lower()}"
-            
-        elif "living room lamp" in command:
-            action = "ON" if "on" in command else "OFF"
-            print(f"🏠 Living room lamp is now {action}")
-            response_text = f"Living room lamp is now {action.lower()}"
-            
-        elif command == "get weather":
-            print("🌤️ Today's weather: Sunny, 22°C")
-            response_text = "Today's weather is sunny, 22 degrees celsius"
-            
-        elif command == "get time":
-            current_time = time.strftime("%H:%M")
-            print(f"🕐 Current time: {current_time}")
-            response_text = f"The current time is {current_time}"
-            
-        elif command == "set timer":
-            print("⏰ Timer set for 5 minutes")
-            response_text = "Timer set for 5 minutes"
-            
-        elif command == "play music or song":
-            if song:
-                print(f"🎵 Playing: {song}")
-                response_text = f"Now playing {song}"
-            else:
-                print("🎵 Playing music...")
-                response_text = "Playing music"
+            if tool_details:
+                tool_name = tool_details['tool_name']
+                tool_description = tool_details['description']
                 
-        elif command == "call for help":
-            print("🚨 Emergency call initiated!")
-            response_text = "Emergency call initiated"
+                print(f"📋 Simple Tool: {tool_name}")
+                print(f"📝 Description: {tool_description}")
+                
+                # Process simple tool based on tool name
+                if tool_name == "turn_on_bedroom_lamp":
+                    response = {"message": "Bedroom lamp is now on", "continue_conversation": False}
+                elif tool_name == "turn_off_bedroom_lamp":
+                    response = {"message": "Bedroom lamp is now off", "continue_conversation": False}   
+
+                elif tool_name == "turn_on_living_room_lamp":
+                    response = {"message": "Living room lamp is now on", "continue_conversation": False}
+
+                elif tool_name == "turn_off_living_room_lamp":
+                    response = {"message": "Living room lamp is now off", "continue_conversation": False}
+
+                elif tool_name == "turn_on_all_lights":
+                    response = {"message": "All lights are now on", "continue_conversation": False}
+
+                elif tool_name == "turn_off_all_lights":
+                    response = {"message": "All lights are now off", "continue_conversation": False}
+
+                elif tool_name == "get_time":
+                    response = {"message": "The current time is 12:00 PM", "continue_conversation": False}
+
+                elif tool_name == "get_weather":
+                    response = {"message": "The current weather is sunny", "continue_conversation": False}
+
+                elif tool_name == "volume_up":
+                    response = {"message": "Volume is now up", "continue_conversation": False}
+
+                elif tool_name == "volume_down":
+                    response = {"message": "Volume is now down", "continue_conversation": False}
+
+                elif tool_name == "mute":
+                    response = {"message": "Volume is now muted", "continue_conversation": False}
+
+                elif tool_name == "unmute":
+                    response = {"message": "Volume is now unmuted", "continue_conversation": False}
+
+                else:
+                    # Unknown simple tool - provide generic response
+                    print(f"⚙️ Executing simple tool: {tool_name}")
+                    response = {"message": f"Executing {tool_name}", "continue_conversation": False}
+            else:
+                print("❌ Simple tool not found in database")
+                response = {"message": "Sorry, I couldn't find that tool", "continue_conversation": False}      
+
+        elif tool_type == "intelligent":
+            # For intelligent tools, pass to LLM with tool ID
+            print(f"🤖 Calling AI assistant with intelligent tool ID: {tool_id}")
             
-        elif command == "Search for bluetooth speaker":
-            print("🔍 Searching for bluetooth speaker...")
-            response_text = "Searching for bluetooth speaker"
-            
-        elif command == "Lets ask LLM":
-            print("🤖 Asking AI assistant...")
-            response_text = await self.api_client.get_ai_response(original_text)
+            # Call LLM with tool context
+            response = await self.api_client.get_ai_response(user_message=command_text, tool_id=tool_id)
             
         else:
-            print("🤖 I'll need to ask an AI assistant for that...")
-            response_text = await self.api_client.get_ai_response(original_text)
+            # No tool found - fallback to LLM
+            print("🤖 No specific tool found, asking AI assistant...")
+            response = await self.api_client.get_ai_response(command_text, tool_id=None)
 
-        # Speak the response
-        if response_text:
-            self.audio_manager.speak(response_text)
+        # Debug the response
+        print(f"🔍 Response received: '{response}' (type: {type(response)})")
+        
+
+        return response
+        # # Speak the response
+        # if response:
+        #     print(f"🔊 About to speak: {response}")
+            
+        # else:
+        #     print("❌ No response to speak - response is empty or None")
+
+

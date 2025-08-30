@@ -17,7 +17,7 @@ class SpeechRecognizer:
         print("Loading speech recognition model...")
         self.vosk_model = Model(lang=model_lang)
         
-    def recognize_command(self, audio_manager, listening_event, max_silence_duration=2.0):
+    def recognize_command(self, audio_manager, listening_event, max_silence_duration=3.0):
         """Listen for and recognize a command"""
         print("🎤 Listening for command... (speak now)")
 

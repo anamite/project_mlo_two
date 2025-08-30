@@ -1,0 +1,47 @@
+# Core ML and AI Libraries
+numpy>=1.21.0
+sentence-transformers>=2.2.0
+scikit-learn>=1.0.0
+
+# Audio Processing
+sounddevice>=0.4.0
+vosk>=0.3.45
+
+# Text-to-Speech
+kittentts>=0.1.0
+# pip install https://github.com/KittenML/KittenTTS/releases/download/0.1/kittentts-0.1.0-py3-none-any.whl
+
+# Wake Word Detection
+openwakeword>=0.5.0
+
+# HTTP Client
+aiohttp>=3.8.0
+
+# Conversation AI Client
+groq>=0.4.0
+
+# Web Framework (for tools/clock_app.py)
+fastapi>=0.68.0
+pydantic>=1.8.0
+uvicorn>=0.15.0
+
+# System and Standard Libraries (usually built-in, but listed for completeness)
+# sqlite3 - built-in
+# json - built-in
+# os - built-in
+# asyncio - built-in
+# threading - built-in
+# time - built-in
+# datetime - built-in
+# typing - built-in
+# queue - built-in
+# sys - built-in
+# argparse - built-in
+# contextlib - built-in
+# uuid - built-in
+# zoneinfo - built-in (Python 3.9+)
+# importlib - built-in
+
+# Development/Optional (uncomment if needed)
+# jupyter>=1.0.0
+# ipython>=7.0.0

@@ -13,10 +13,11 @@ from wake_word_detector import WakeWordDetector
 from speech_recognizer import SpeechRecognizer
 from command_processor import CommandProcessor
 from command_executor import CommandExecutor
+from message_manager import MessageManager
 
 
 class VoiceAssistant:
-    def __init__(self, model_lang="en-us", samplerate=16000, voice="expr-voice-2-m"):
+    def __init__(self, model_lang="en-us", samplerate=16000, voice="expr-voice-5-m"):
         self.samplerate = samplerate
         
         # Initialize all components
@@ -26,9 +27,11 @@ class VoiceAssistant:
         self.speech_recognizer = SpeechRecognizer(model_lang, samplerate)
         self.command_processor = CommandProcessor()
         self.command_executor = CommandExecutor(self.audio_manager)
-        
+        self.message_manager = MessageManager()
+        self.continue_conversation = False
+
         # Set voice
-        self.audio_manager.set_voice(voice)
+        # self.audio_manager.set_voice(voice)
         
         # State management
         self.listening_for_command = Event()
@@ -37,21 +40,26 @@ class VoiceAssistant:
         print("All models loaded successfully!")
 
     async def process_command_async(self, command_text):
-        """Process command asynchronously"""
+        """Process command asynchronously and return response"""
         if command_text.strip():
             print(f"\n📥 Processing: '{command_text}'")
 
+            self.message_manager.add_message("user", command_text)
+
             # Process with embedding model
-            command, confidence, song, song_confidence = self.command_processor.process_command(command_text)
+            tool_type, tool_id, confidence = self.command_processor.process_command(command_text)
 
-            print(f"🎯 Best match: '{command}' ({confidence:.1f}%)")
-            if song:
-                print(f"🎵 Song match: '{song}' ({song_confidence:.1f}%)")
+            print(f"🎯 Best match: '{tool_id}' ({confidence:.1f}%)")
 
-            # Execute command (includes voice response)
-            await self.command_executor.execute_command(command, song, command_text)
+            # Execute command and get response
+            response = await self.command_executor.execute_initial_command(tool_type, tool_id, confidence, command_text)
+            return response
         else:
-            self.audio_manager.speak("I didn't hear anything. Please try again.")
+            self.continue_conversation = False
+            # beep twice
+            self.audio_manager.play_low_beep()
+            self.audio_manager.play_low_beep()
+            return None
 
     def run(self):
         """Main assistant loop with async support"""
@@ -62,6 +70,8 @@ class VoiceAssistant:
                 print("🔊  Say 'computer' or 'alexa' to start")
                 print("⌨️   Press Ctrl+C to stop")
                 print("=" * 60)
+                # speak i am ready
+                self.audio_manager.auto_detect_speak("I am ready")
 
                 # Start wake word detection
                 self.wake_word_detector.start_detection(self.audio_manager)
@@ -79,11 +89,11 @@ class VoiceAssistant:
                         try:
                             # Wait for wake word
                             await asyncio.sleep(0.1)  # Non-blocking sleep
-                            
-                            if self.wake_word_detector.is_wake_detected():
+
+                            if self.wake_word_detector.is_wake_detected() or self.continue_conversation:
                                 # Play beep instead of voice response
                                 print("🎯 Wake word detected!")
-                                self.audio_manager.play_beep()
+                                self.audio_manager.play_beep(duration=0.3)  if self.continue_conversation == True else self.audio_manager.play_beep(duration=0.5)
 
                                 # Start listening for command
                                 self.listening_for_command.set()
@@ -107,9 +117,23 @@ class VoiceAssistant:
                                 
                                 self.listening_for_command.clear()
 
-                                # Process command asynchronously
-                                await self.process_command_async(command_text)
-
+                                # Process command asynchronously and get response
+                                response = await self.process_command_async(command_text)
+                                
+                                # Speak the response message in main loop get does not work apparently
+                                if response and response["message"]:
+                                    self.audio_manager.auto_detect_speak(response["message"])
+                                
+                                # Check if conversation should continue
+                                if response and response["continue_conversation"]:
+                                    print("🔄 Continuing conversation...")
+                                    # Continue listening without waiting for wake word
+                                    self.continue_conversation = True
+                                    continue
+                                else:
+                                    self.continue_conversation = False
+                                    
+                                self.wake_word_detector.wake_detected.clear()
                                 print(f"\n{'=' * 30}")
                                 print("🔊 Ready for next wake word...")
                                 print("=" * 30)

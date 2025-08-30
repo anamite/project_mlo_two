@@ -59,6 +59,7 @@ class WakeWordDetector:
         """Check if wake word was detected and clear the event"""
         if self.wake_detected.is_set():
             self.wake_detected.clear()
+            print(f"🎤 Ready to listen for command...")
             return True
         return False
         

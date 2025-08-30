@@ -33,7 +33,7 @@ def main():
     )
     parser.add_argument(
         "-v", "--voice", 
-        type=str, 
+        type=str,    
         default="expr-voice-2-m",
         help="TTS voice (default: expr-voice-2-m)"
     )
