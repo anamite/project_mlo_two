@@ -18,6 +18,7 @@ import os
 import time
 from dotenv import load_dotenv
 import os
+from database_manager import UserSettingsManager
 
 load_dotenv()  # This loads the .env file
 
@@ -27,6 +28,7 @@ class AudioManager:
         self.samplerate = samplerate
         self.audio_queue = queue.Queue()
         self.wake_queue = queue.Queue()
+        self.user_settings = UserSettingsManager()
         
         # Initialize TTS model
         print("Loading TTS model...")
@@ -178,7 +180,7 @@ class AudioManager:
         # resemble_api_key = "mqQeZH6Uo3aZhae5CFSmsgtt"
 
         # Check if we have internet connectivity and API key
-        if resemble_api_key and self.check_internet_connectivity():
+        if resemble_api_key and self.check_internet_connectivity() and self.user_settings.get_config("privacy_mode") == "false":
             print("🌐 Internet detected, trying Resemble AI TTS...")
             
             # Try Resemble AI TTS
