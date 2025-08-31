@@ -59,7 +59,7 @@ class CommandExecutor:
                     response = {"message": "All lights are now off", "continue_conversation": False}
 
                 elif tool_name == "get_time":
-                    response = {"message": "The current time is 12:00 PM", "continue_conversation": False}
+                    response = {"message": f"The current time is {time.strftime('%I:%M %p', time.localtime())}", "continue_conversation": False}
 
                 elif tool_name == "get_weather":
                     response = {"message": "The current weather is sunny", "continue_conversation": False}
@@ -75,6 +75,12 @@ class CommandExecutor:
 
                 elif tool_name == "unmute":
                     response = {"message": "Volume is now unmuted", "continue_conversation": False}
+                elif tool_name == "private_mode_on":
+                    response = {"message": "Private mode is now enabled", "continue_conversation": False}
+                elif tool_name == "private_mode_off":
+                    response = {"message": "Private mode is now disabled", "continue_conversation": False}
+                elif tool_name == "switch_voice":
+                    response = {"message": "Voice has been switched", "continue_conversation": False}
 
                 else:
                     # Unknown simple tool - provide generic response

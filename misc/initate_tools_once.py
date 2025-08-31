@@ -23,6 +23,9 @@ if __name__ == "__main__":
     db_manager.add_simple_tool("volume_down", "turn down the volume, decrease volume level")
     db_manager.add_simple_tool("mute", "mute the volume")
     db_manager.add_simple_tool("unmute", "unmute the volume")
+    db_manager.add_simple_tool("private_mode_on", "enable private mode, disconnect from internet")
+    db_manager.add_simple_tool("private_mode_off", "disable private mode, reconnect to internet")
+    db_manager.add_simple_tool("switch_voice", "switch to a different voice, change voice to male or female")
 
 
     # Get all simple tools

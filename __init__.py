@@ -11,6 +11,7 @@ from .speech_recognizer import SpeechRecognizer
 from .command_processor import CommandProcessor
 from .command_executor import CommandExecutor
 from .api_client import APIClient
+from .database_manager import DatabaseManager, UserSettingsManager
 
 __version__ = "1.0.0"
 __author__ = "Voice Assistant Team"
@@ -22,5 +23,7 @@ __all__ = [
     "SpeechRecognizer",
     "CommandProcessor",
     "CommandExecutor",
-    "APIClient"
+    "APIClient",
+    "DatabaseManager",
+    "UserSettingsManager"
 ]

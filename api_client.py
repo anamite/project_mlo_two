@@ -10,6 +10,11 @@ from groq import Groq
 import json
 
 from message_manager import MessageManager
+from database_manager import UserSettingsManager
+from dotenv import load_dotenv
+import os
+import time
+load_dotenv()  # This loads the .env file
 
 # # Initialize
 # msg_manager = MessageManager() # this manages the conversation history and to built thread context
@@ -24,8 +29,9 @@ from message_manager import MessageManager
 
 class APIClient:
     def __init__(self, model="openai/gpt-oss-120b"):
-        self.api_key = "None"
+        self.api_key = os.getenv("GROQ_API_KEY") 
         self.model = model
+        self.user_settings = UserSettingsManager()
         self.client = Groq(api_key=self.api_key)
         self.response_format={
             "type": "json_schema",
@@ -79,6 +85,12 @@ class APIClient:
         # Get past messages from database (already in the correct format)
         past_messages = self.message_manager.get_last_messages(10)
 
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        day = time.strftime("%A", time.localtime())
+        user = self.user_settings.get_all_users()
+        user_name = (user[0]['first_name'] + " " + user[0]['last_name']) if user else "User"
+        location = "Germany"
+
         if not self.api_key:
             print("❌ No API key found")
             return {"message": "Sorry, I don't have access to AI assistance right now.", "continue_conversation": False}
@@ -92,8 +104,9 @@ class APIClient:
                 "Continue conversation only if it makes sense. For direct answers, stay short and kind."
                 "You are voice assistant (ie; the text you give could contain expressions and details)"
                 "You don't have to be overly formal, just be yourself. keep it simple.. straight answers, but casual"
-                "Additional Info:user_name: Alex, time: 10:45 AM, day: Saturday, location: New York"
-                "\n\nIMPORTANT: You MUST respond in valid JSON format following the exact schema provided. Do not include any text outside the JSON structure.",
+                f"Additional Info:user_name: {user_name}, time: {current_time}, day: {day}, location: {location}"
+                "\n\nIMPORTANT: You MUST respond in valid JSON format following the exact schema provided. Do not include any text outside the JSON structure."
+                "Do not use Emojis  or icons in your text.",
             }
         ]
         

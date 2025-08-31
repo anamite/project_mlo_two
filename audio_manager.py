@@ -16,6 +16,11 @@ import io
 import soundfile as sf
 import os
 import time
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # This loads the .env file
+
 
 class AudioManager:
     def __init__(self, samplerate=16000):
@@ -32,7 +37,7 @@ class AudioManager:
             'expr-voice-2-m', 'expr-voice-2-f', 'expr-voice-3-m', 'expr-voice-3-f',
             'expr-voice-4-m', 'expr-voice-4-f', 'expr-voice-5-m', 'expr-voice-5-f'
         ]
-        self.current_voice = 'expr-voice-4-m'
+        self.current_voice = 'expr-voice-5-f'
         
     def set_voice(self, voice):
         """Set the TTS voice"""
@@ -57,12 +62,21 @@ class AudioManager:
         """Play a low beep tone to indicate deactivation"""
         self.play_beep(frequency=400, duration=0.3)
 
+    def play_sound(self, file_path):
+        """Play a sound file"""
+        try:
+            data, samplerate = sf.read(file_path, dtype='float32')
+            sd.play(data, samplerate=samplerate)
+            sd.wait()
+        except Exception as e:
+            print(f"Sound playback error: {e}")
+
     def speak(self, text):
         """Convert text to speech and play it"""
         try:
             print(f"🔊 Speaking: {text}")
             audio = self.tts_model.generate(text, voice=self.current_voice)
-            sd.play(audio, samplerate=28000)
+            sd.play(audio, samplerate=24000)
             sd.wait()  # Wait until audio finishes playing
         except Exception as e:
             print(f"TTS Error: {e}")
@@ -104,7 +118,7 @@ class AudioManager:
         except (requests.ConnectionError, requests.Timeout):
             return False
 
-    def resemble_tts_speak(self, text, api_key="none", voice_uuid="55592656"):
+    def resemble_tts_speak(self, text, api_key="mqQeZH6Uo3aZhae5CFSmsgtt", voice_uuid="55592656"):
         """Use Resemble AI TTS to convert text to speech"""
         try:
             url = "https://f.cluster.resemble.ai/synthesize"
@@ -159,9 +173,9 @@ class AudioManager:
         """
         
         # Get API key from parameter or environment variable
-        # if not resemble_api_key:
-        #     resemble_api_key = os.getenv('RESEMBLE_API_KEY')
-        resemble_api_key = "none"
+        if not resemble_api_key:
+            resemble_api_key = os.getenv('RESEMBLE_API_KEY')
+        # resemble_api_key = "mqQeZH6Uo3aZhae5CFSmsgtt"
 
         # Check if we have internet connectivity and API key
         if resemble_api_key and self.check_internet_connectivity():
@@ -256,12 +270,10 @@ class AudioManager:
             import time
             
             # Initialize Polly client (uses AWS credentials from environment or AWS config)
-            # polly = boto3.client('polly',
-            #                 aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            #                 aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-            #                 region_name=os.getenv('AWS_REGION', 'us-east-1'))
-            
-    
+            polly = boto3.client('polly',
+                            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                            region_name=os.getenv('AWS_REGION', 'us-east-1'))
 
             print(f"🔊 HTTP Streaming (Amazon Polly): {text}")
             start_time = time.time()
