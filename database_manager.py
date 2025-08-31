@@ -1002,7 +1002,8 @@ class UserSettingsManager:
             "voice_sensitivity": {"value": "0.5", "type": "float", "description": "Microphone sensitivity (0.0-1.0)"},
             "speech_rate": {"value": "1.0", "type": "float", "description": "Speech synthesis rate"},
             "voice_volume": {"value": "0.8", "type": "float", "description": "Voice output volume (0.0-1.0)"},
-            
+            "privacy_mode": {"value": "false", "type": "boolean", "description": "Enable privacy mode (local processing only)"},
+
             # Assistant behavior
             "response_language": {"value": "en", "type": "string", "description": "Primary language for responses"},
             "assistant_personality": {"value": "helpful", "type": "string", "description": "Assistant personality type"},

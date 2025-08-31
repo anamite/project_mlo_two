@@ -6,7 +6,7 @@ Handles execution of recognized commands
 
 import time
 from api_client import APIClient
-from database_manager import DatabaseManager
+from database_manager import DatabaseManager, UserSettingsManager
 
 
 class CommandExecutor:
@@ -14,6 +14,7 @@ class CommandExecutor:
         self.audio_manager = audio_manager
         self.api_client = APIClient()
         self.db_manager = DatabaseManager()
+        self.user_settings = UserSettingsManager()
 
     async def execute_initial_command(self, tool_type, tool_id, confidence, command_text):
         """
@@ -75,10 +76,15 @@ class CommandExecutor:
 
                 elif tool_name == "unmute":
                     response = {"message": "Volume is now unmuted", "continue_conversation": False}
+
                 elif tool_name == "private_mode_on":
+                    self.user_settings.set_config("privacy_mode", "true", "boolean", "Enable privacy mode (local processing only)")
                     response = {"message": "Private mode is now enabled", "continue_conversation": False}
+
                 elif tool_name == "private_mode_off":
+                    self.user_settings.set_config("privacy_mode", "false", "boolean", "Enable privacy mode (local processing only)")
                     response = {"message": "Private mode is now disabled", "continue_conversation": False}
+
                 elif tool_name == "switch_voice":
                     response = {"message": "Voice has been switched", "continue_conversation": False}
 
@@ -90,17 +96,18 @@ class CommandExecutor:
                 print("❌ Simple tool not found in database")
                 response = {"message": "Sorry, I couldn't find that tool", "continue_conversation": False}      
 
-        elif tool_type == "intelligent":
+        elif tool_type == "intelligent" and self.user_settings.get_config("privacy_mode") == "false":
             # For intelligent tools, pass to LLM with tool ID
             print(f"🤖 Calling AI assistant with intelligent tool ID: {tool_id}")
             
             # Call LLM with tool context
             response = await self.api_client.get_ai_response(user_message=command_text, tool_id=tool_id)
             
-        else:
+        elif self.user_settings.get_config("privacy_mode") == "false":
             # No tool found - fallback to LLM
-            print("🤖 No specific tool found, asking AI assistant...")
             response = await self.api_client.get_ai_response(command_text, tool_id=None)
+        else:
+            response = {"message": "Privacy mode is enabled, not calling AI assistant.", "continue_conversation": False}
 
         # Debug the response
         print(f"🔍 Response received: '{response}' (type: {type(response)})")
